@@ -148,3 +148,36 @@ button {
   font-weight: 400;
   color: #64748b;
 }
+/* ===== Mobile Responsive ===== */
+@media (max-width: 768px) {
+
+  .container {
+    padding: 20px 15px;
+  }
+
+  .topbar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+  }
+
+  .topbar h1 {
+    font-size: 20px;
+  }
+
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+
+  .laptop-box {
+    padding: 16px;
+    font-size: 14px;
+  }
+
+  button {
+    font-size: 13px;
+    padding: 6px 12px;
+  }
+
+}
