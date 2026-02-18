@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Nairong Laptop Borrow</title>
+  
+  <link rel="stylesheet" href="style.css">
+
+</head>
+<body>
+
+<h1>ระบบยืมโน้ตบุ๊ค โรงเรียนนายโรง</h1>
+
+<button id="loginBtn">Login ด้วยเมลโรงเรียน</button>
+<button id="logoutBtn" style="display:none;">Logout</button>
+
+<p id="userInfo"></p>
+
+<h2>รายการโน้ตบุ๊ค</h2>
+<div id="laptopList" 
+     style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;">
+</div>
+
+<script type="module">
+  import { initializeApp } 
+  from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+
+  import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } 
+  from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+  import { 
+    getFirestore, 
+    collection, 
+    getDocs, 
+    doc, 
+    updateDoc 
+  } 
+  from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyA_2zR_-aF-DTQgMzkuTht42Gb8Mv7BU04",
+    authDomain: "authentication-c67a5.firebaseapp.com",
+    projectId: "authentication-c67a5",
+    storageBucket: "authentication-c67a5.firebasestorage.app",
+    messagingSenderId: "705284877449",
+    appId: "1:705284877449:web:d2f467de3596dd8fcc6a58"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const provider = new GoogleAuthProvider();
+  const db = getFirestore(app);
+
+  const loginBtn = document.getElementById("loginBtn");
+  const logoutBtn = document.getElementById("logoutBtn");
+  const userInfo = document.getElementById("userInfo");
+  const laptopList = document.getElementById("laptopList");
+
+  let currentUser = null;
+
+ async function loadLaptops() {
+  const querySnapshot = await getDocs(collection(db, "laptops"));
+
+  laptopList.innerHTML = "";
+
+  // 🔥 แปลง snapshot เป็น array ก่อน
+  const docsArray = [];
+
+  querySnapshot.forEach((docSnap) => {
+    docsArray.push({
+      id: docSnap.id,
+      ...docSnap.data()
+    });
+  });
+
+  // 🔥 เรียงตามตัวเลขท้ายชื่อ
+  docsArray.sort((a, b) => {
+    const numA = parseInt(a.name.match(/\d+/)[0]);
+    const numB = parseInt(b.name.match(/\d+/)[0]);
+    return numA - numB;
+  });
+
+  // 🔥 วาด UI หลังจากเรียงแล้ว
+  docsArray.forEach((data) => {
+    const status = (data.status || "").toLowerCase().trim();
+
+    const box = document.createElement("div");
+
+box.innerHTML = `
+  ${data.name}<br>
+  ${status === "borrowed" ? 
+    "👤 " + data.borrowedBy + "<br>🕒 " + data.borrowDate 
+    : ""}
+`;
+
+
+    box.style.padding = "20px";
+    box.style.textAlign = "center";
+    box.style.borderRadius = "10px";
+    box.style.color = "white";
+    box.style.fontWeight = "bold";
+    box.style.cursor = "pointer";
+
+    if (status === "available") {
+      box.style.backgroundColor = "green";
+    } else {
+      box.style.backgroundColor = "red";
+    }
+
+    box.onclick = async () => {
+      if (!currentUser) return;
+
+      const docRef = doc(db, "laptops", data.id);
+
+      if (status === "available") {
+        await updateDoc(docRef, {
+          status: "borrowed",
+          borrowedBy: currentUser.email,
+          borrowDate: new Date().toLocaleString()
+        });
+      } else {
+        if (data.borrowedBy === currentUser.email) {
+          await updateDoc(docRef, {
+            status: "available",
+            borrowedBy: "",
+            borrowDate: ""
+          });
+        } else {
+          alert("เครื่องนี้ถูกยืมโดยคนอื่น");
+        }
+      }
+
+      loadLaptops();
+    };
+
+    laptopList.appendChild(box);
+  });
+}
+// Login
+loginBtn.onclick = () => {
+  signInWithPopup(auth, provider)
+    .catch((error) => {
+      console.log(error);
+    });
+};
+// 🔥 ตรวจสอบสถานะ login ทุกครั้งที่โหลดหน้า
+onAuthStateChanged(auth, (user) => {
+  if (user && user.email.endsWith("@nairong.ac.th")) {
+
+    currentUser = user;
+    userInfo.innerHTML = "เข้าสู่ระบบแล้ว: " + user.email;
+    loginBtn.style.display = "none";
+    logoutBtn.style.display = "inline";
+    loadLaptops();
+
+  } else {
+
+    if (user) {
+      alert("กรุณาใช้เมลโรงเรียนเท่านั้น!");
+      signOut(auth);
+    }
+
+    currentUser = null;
+    userInfo.innerHTML = "";
+    loginBtn.style.display = "inline";
+    logoutBtn.style.display = "none";
+    laptopList.innerHTML = "";
+  }
+});
+
+
+  // Logout
+  logoutBtn.onclick = () => {
+    signOut(auth);
+    currentUser = null;
+    userInfo.innerHTML = "";
+    loginBtn.style.display = "inline";
+    logoutBtn.style.display = "none";
+    laptopList.innerHTML = "";
+  };
+
+</script>
+
+</body>
+</html>

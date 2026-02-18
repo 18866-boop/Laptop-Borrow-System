@@ -1,0 +1,150 @@
+/* ===== Base ===== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Inter", "Segoe UI", sans-serif;
+}
+
+body {
+  background: linear-gradient(135deg, #eef2ff, #f8fafc);
+  min-height: 100vh;
+  color: #1e293b;
+}
+
+/* ===== Layout ===== */
+.container {
+  max-width: 1300px;
+  margin: auto;
+  padding: 40px 20px;
+}
+
+/* ===== Header ===== */
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 50px;
+  padding: 20px 30px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 8px 30px rgba(0,0,0,0.05);
+}
+
+.topbar h1 {
+  font-size: 26px;
+  font-weight: 600;
+  letter-spacing: -0.5px;
+}
+
+.auth-section {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+#userInfo {
+  font-size: 14px;
+  color: #475569;
+}
+
+/* ===== Buttons ===== */
+button {
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+#loginBtn {
+  background: #4f46e5;
+  color: white;
+}
+
+#loginBtn:hover {
+  background: #4338ca;
+}
+
+#logoutBtn {
+  background: #ef4444;
+  color: white;
+}
+
+#logoutBtn:hover {
+  background: #dc2626;
+}
+
+/* ===== Section ===== */
+.section-title {
+  font-size: 20px;
+  margin-bottom: 25px;
+  font-weight: 600;
+}
+
+/* ===== Grid ===== */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 20px;
+}
+
+/* ===== Card ===== */
+.laptop-box {
+  background: white;
+  padding: 22px;
+  border-radius: 16px;
+  text-align: center;
+  font-weight: 600;
+  font-size: 15px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.05);
+  position: relative;
+}
+
+.laptop-box:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 14px 30px rgba(0,0,0,0.08);
+}
+
+/* ===== Status Badge ===== */
+.status-badge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  padding: 4px 10px;
+  font-size: 11px;
+  border-radius: 20px;
+  font-weight: 600;
+}
+
+/* Available */
+.available {
+  border: 2px solid #22c55e;
+}
+
+.available .status-badge {
+  background: #dcfce7;
+  color: #16a34a;
+}
+
+/* Borrowed */
+.borrowed {
+  border: 2px solid #ef4444;
+}
+
+.borrowed .status-badge {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.borrow-info {
+  margin-top: 12px;
+  font-size: 13px;
+  font-weight: 400;
+  color: #64748b;
+}
