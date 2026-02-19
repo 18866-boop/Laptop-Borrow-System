@@ -1,183 +1,109 @@
-/* ===== Base ===== */
+/* ===== Material Theme ===== */
+
 * {
-  margin: 0;
-  padding: 0;
   box-sizing: border-box;
-  font-family: "Inter", "Segoe UI", sans-serif;
 }
 
 body {
-  background: linear-gradient(135deg, #eef2ff, #f8fafc);
-  min-height: 100vh;
-  color: #1e293b;
+  font-family: 'Sarabun', sans-serif;
+  margin: 0;
+  padding: 20px;
+  background: #f5f5f5;
+  color: #212121;
 }
 
-/* ===== Layout ===== */
-.container {
-  max-width: 1300px;
-  margin: auto;
-  padding: 40px 20px;
-}
-
-/* ===== Header ===== */
-.topbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 50px;
-  padding: 20px 30px;
-  border-radius: 16px;
-  background: rgba(255, 255, 255, 0.6);
-  backdrop-filter: blur(10px);
-  box-shadow: 0 8px 30px rgba(0,0,0,0.05);
-}
-
-.topbar h1 {
-  font-size: 26px;
+h1 {
+  text-align: center;
   font-weight: 600;
-  letter-spacing: -0.5px;
 }
 
-.auth-section {
-  display: flex;
-  align-items: center;
-  gap: 14px;
+.button-group {
+  text-align: center;
+  margin: 20px 0;
 }
 
-#userInfo {
-  font-size: 14px;
-  color: #475569;
-}
-
-/* ===== Buttons ===== */
 button {
-  padding: 8px 16px;
+  padding: 10px 18px;
   border-radius: 8px;
   border: none;
+  font-weight: 600;
   cursor: pointer;
-  font-size: 14px;
-  font-weight: 500;
-  transition: all 0.2s ease;
+  margin: 5px;
+  transition: box-shadow 0.2s ease;
 }
 
 #loginBtn {
-  background: #4f46e5;
+  background: #1976d2;
   color: white;
-}
-
-#loginBtn:hover {
-  background: #4338ca;
 }
 
 #logoutBtn {
-  background: #ef4444;
+  background: #d32f2f;
   color: white;
 }
 
-#logoutBtn:hover {
-  background: #dc2626;
+button:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
 }
 
-/* ===== Section ===== */
-.section-title {
-  font-size: 20px;
-  margin-bottom: 25px;
-  font-weight: 600;
+.stats {
+  display: flex;
+  gap: 15px;
+  margin: 20px 0;
+  flex-wrap: wrap;
 }
 
-/* ===== Grid ===== */
-.grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 20px;
-}
-
-/* ===== Card ===== */
-.laptop-box {
+.stat-box {
+  flex: 1;
+  padding: 16px;
+  border-radius: 12px;
   background: white;
-  padding: 22px;
-  border-radius: 16px;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+  font-weight: 600;
   text-align: center;
-  font-weight: 600;
-  font-size: 15px;
-  cursor: pointer;
-  transition: all 0.25s ease;
-  box-shadow: 0 6px 18px rgba(0,0,0,0.05);
-  position: relative;
 }
 
-.laptop-box:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 14px 30px rgba(0,0,0,0.08);
+.stat-box.available {
+  color: #2e7d32;
 }
 
-/* ===== Status Badge ===== */
-.status-badge {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  padding: 4px 10px;
-  font-size: 11px;
-  border-radius: 20px;
-  font-weight: 600;
+.stat-box.borrowed {
+  color: #c62828;
 }
 
-/* Available */
-.available {
-  border: 2px solid #22c55e;
+#laptopList {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 15px;
 }
 
-.available .status-badge {
-  background: #dcfce7;
-  color: #16a34a;
+.laptop-card {
+  background: white;
+  padding: 20px 10px;
+  border-radius: 12px;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+  text-align: center;
+  transition: 0.2s ease;
 }
 
-/* Borrowed */
-.borrowed {
-  border: 2px solid #ef4444;
+.laptop-card.available {
+  border-bottom: 5px solid #2e7d32;
 }
 
-.borrowed .status-badge {
-  background: #fee2e2;
-  color: #dc2626;
+.laptop-card.borrowed {
+  border-bottom: 5px solid #c62828;
+}
+
+.laptop-card:hover {
+  transform: translateY(-3px);
+}
+
+.laptop-name {
+  font-weight: 700;
+  margin-bottom: 8px;
 }
 
 .borrow-info {
-  margin-top: 12px;
-  font-size: 13px;
-  font-weight: 400;
-  color: #64748b;
-}
-/* ===== Mobile Responsive ===== */
-@media (max-width: 768px) {
-
-  .container {
-    padding: 20px 15px;
-  }
-
-  .topbar {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 15px;
-  }
-
-  .topbar h1 {
-    font-size: 20px;
-  }
-
-  .grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
-  }
-
-  .laptop-box {
-    padding: 16px;
-    font-size: 14px;
-  }
-
-  button {
-    font-size: 13px;
-    padding: 6px 12px;
-  }
-
+  font-size: 12px;
+  color: #666;
 }

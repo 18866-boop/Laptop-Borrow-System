@@ -1,72 +1,100 @@
 <!DOCTYPE html>
 <html>
 <head>
-
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <meta charset="UTF-8">
-  <title>Nairong Laptop Borrow</title>
-  
-  <link rel="stylesheet" href="style.css">
-
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<title>Nairong Laptop Borrow</title> 
+<link rel="stylesheet" href="style.css">
 </head>
+
 <body>
 
 <h1>ระบบยืมโน้ตบุ๊ค โรงเรียนนายโรง</h1>
 
-<button id="loginBtn">Login ด้วยเมลโรงเรียน</button>
-<button id="logoutBtn" style="display:none;">Logout</button>
+<div class="button-group">
+  <button id="loginBtn">Login ด้วยเมลโรงเรียน</button>
+  <button id="logoutBtn" style="display:none;">Logout</button>
+</div>
 
 <p id="userInfo"></p>
 
-<h2>รายการโน้ตบุ๊ค</h2>
-<div id="laptopList" 
-     style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;">
+<div class="stats">
+  <div class="stat-box available">
+    🟢 ว่าง: <span id="availableCount">0</span>
+  </div>
+  <div class="stat-box borrowed">
+    🔴 ถูกยืม: <span id="borrowedCount">0</span>
+  </div>
 </div>
 
+<h2>รายการโน้ตบุ๊ค</h2>
+
+<div id="laptopList"></div>
+
 <script type="module">
-  import { initializeApp } 
-  from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 
-  import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } 
-  from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { initializeApp } 
+from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 
-  import { 
-    getFirestore, 
-    collection, 
-    getDocs, 
-    doc, 
-    updateDoc 
-  } 
-  from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } 
+from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyA_2zR_-aF-DTQgMzkuTht42Gb8Mv7BU04",
-    authDomain: "authentication-c67a5.firebaseapp.com",
-    projectId: "authentication-c67a5",
-    storageBucket: "authentication-c67a5.firebasestorage.app",
-    messagingSenderId: "705284877449",
-    appId: "1:705284877449:web:d2f467de3596dd8fcc6a58"
-  };
+import { 
+  getFirestore, 
+  collection, 
+  getDocs, 
+  getDoc,
+  doc, 
+  updateDoc 
+} 
+from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-  const provider = new GoogleAuthProvider();
-  const db = getFirestore(app);
+let isAdmin = false;
+let currentUser = null;
 
-  const loginBtn = document.getElementById("loginBtn");
-  const logoutBtn = document.getElementById("logoutBtn");
-  const userInfo = document.getElementById("userInfo");
-  const laptopList = document.getElementById("laptopList");
+const firebaseConfig = {
+  apiKey: "AIzaSyA_2zR_-aF-DTQgMzkuTht42Gb8Mv7BU04",
+  authDomain: "authentication-c67a5.firebaseapp.com",
+  projectId: "authentication-c67a5",
+  storageBucket: "authentication-c67a5.firebasestorage.app",
+  messagingSenderId: "705284877449",
+  appId: "1:705284877449:web:d2f467de3596dd8fcc6a58"
+};
 
-  let currentUser = null;
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const provider = new GoogleAuthProvider();
+const db = getFirestore(app);
 
- async function loadLaptops() {
+const loginBtn = document.getElementById("loginBtn");
+const logoutBtn = document.getElementById("logoutBtn");
+const userInfo = document.getElementById("userInfo");
+const laptopList = document.getElementById("laptopList");
+const availableCount = document.getElementById("availableCount");
+const borrowedCount = document.getElementById("borrowedCount");
+
+async function sendToSheet(action, laptopName) {
+  const formData = new FormData();
+  formData.append("name", currentUser.displayName || "");
+  formData.append("email", currentUser.email);
+  formData.append("laptop", laptopName);
+  formData.append("date", new Date().toLocaleString("th-TH"));
+  formData.append("action", action);
+
+  await fetch("https://script.google.com/macros/s/AKfycbyDEtqPKZ_2KgrfGBT2fKNBs8U-d9Mcyjg_Xb_cgFJ8QsfO67VtIh0PemCpm4PSugh0KQ/exec", {
+    method: "POST",
+    body: formData
+  });
+}
+
+async function loadLaptops() {
   const querySnapshot = await getDocs(collection(db, "laptops"));
-
   laptopList.innerHTML = "";
 
-  // 🔥 แปลง snapshot เป็น array ก่อน
+  let available = 0;
+  let borrowed = 0;
+
   const docsArray = [];
 
   querySnapshot.forEach((docSnap) => {
@@ -76,39 +104,36 @@
     });
   });
 
-  // 🔥 เรียงตามตัวเลขท้ายชื่อ
   docsArray.sort((a, b) => {
     const numA = parseInt(a.name.match(/\d+/)[0]);
     const numB = parseInt(b.name.match(/\d+/)[0]);
     return numA - numB;
   });
 
-  // 🔥 วาด UI หลังจากเรียงแล้ว
   docsArray.forEach((data) => {
+
     const status = (data.status || "").toLowerCase().trim();
 
-    const box = document.createElement("div");
-
-box.innerHTML = `
-  ${data.name}<br>
-  ${status === "borrowed" ? 
-    "👤 " + data.borrowedBy + "<br>🕒 " + data.borrowDate 
-    : ""}
-`;
-
-
-    box.style.padding = "20px";
-    box.style.textAlign = "center";
-    box.style.borderRadius = "10px";
-    box.style.color = "white";
-    box.style.fontWeight = "bold";
-    box.style.cursor = "pointer";
-
     if (status === "available") {
-      box.style.backgroundColor = "green";
-    } else {
-      box.style.backgroundColor = "red";
+      available++;
+    } else if (status === "borrowed") {
+      borrowed++;
     }
+
+    const box = document.createElement("div");
+    box.className = "laptop-card " + status;
+
+    box.innerHTML = `
+      <div class="laptop-name">${data.name}</div>
+      ${
+        status === "borrowed"
+          ? `<div class="borrow-info">
+              👤 ${data.borrowedBy}<br>
+              🕒 ${data.borrowDate}
+            </div>`
+          : ""
+      }
+    `;
 
     box.onclick = async () => {
       if (!currentUser) return;
@@ -116,18 +141,27 @@ box.innerHTML = `
       const docRef = doc(db, "laptops", data.id);
 
       if (status === "available") {
+
         await updateDoc(docRef, {
           status: "borrowed",
           borrowedBy: currentUser.email,
-          borrowDate: new Date().toLocaleString()
+          borrowDate: new Date().toLocaleString("th-TH")
         });
+
+        await sendToSheet("BORROW", data.name);
+
       } else {
-        if (data.borrowedBy === currentUser.email) {
+
+        if (data.borrowedBy === currentUser.email || isAdmin) {
+
           await updateDoc(docRef, {
             status: "available",
             borrowedBy: "",
             borrowDate: ""
           });
+
+          await sendToSheet("RETURN", data.name);
+
         } else {
           alert("เครื่องนี้ถูกยืมโดยคนอื่น");
         }
@@ -138,20 +172,33 @@ box.innerHTML = `
 
     laptopList.appendChild(box);
   });
+
+  availableCount.textContent = available;
+  borrowedCount.textContent = borrowed;
 }
-// Login
+
 loginBtn.onclick = () => {
-  signInWithPopup(auth, provider)
-    .catch((error) => {
-      console.log(error);
-    });
+  signInWithPopup(auth, provider).catch(console.log);
 };
-// 🔥 ตรวจสอบสถานะ login ทุกครั้งที่โหลดหน้า
-onAuthStateChanged(auth, (user) => {
+
+onAuthStateChanged(auth, async (user) => {
+
   if (user && user.email.endsWith("@nairong.ac.th")) {
 
     currentUser = user;
-    userInfo.innerHTML = "เข้าสู่ระบบแล้ว: " + user.email;
+    isAdmin = false;
+
+    const userRef = doc(db, "users", user.email);
+    const userSnap = await getDoc(userRef);
+
+    if (userSnap.exists() && userSnap.data().role === "admin") {
+      isAdmin = true;
+    }
+
+    userInfo.innerHTML =
+      "เข้าสู่ระบบแล้ว: " + user.email +
+      (isAdmin ? " (ADMIN)" : "");
+
     loginBtn.style.display = "none";
     logoutBtn.style.display = "inline";
     loadLaptops();
@@ -164,23 +211,19 @@ onAuthStateChanged(auth, (user) => {
     }
 
     currentUser = null;
+    isAdmin = false;
     userInfo.innerHTML = "";
     loginBtn.style.display = "inline";
     logoutBtn.style.display = "none";
     laptopList.innerHTML = "";
+    availableCount.textContent = 0;
+    borrowedCount.textContent = 0;
   }
 });
 
-
-  // Logout
-  logoutBtn.onclick = () => {
-    signOut(auth);
-    currentUser = null;
-    userInfo.innerHTML = "";
-    loginBtn.style.display = "inline";
-    logoutBtn.style.display = "none";
-    laptopList.innerHTML = "";
-  };
+logoutBtn.onclick = () => {
+  signOut(auth);
+};
 
 </script>
 
