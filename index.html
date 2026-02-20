@@ -10,7 +10,12 @@
 
 <body>
 
-<h1>ระบบยืมโน้ตบุ๊ค โรงเรียนนายโรง</h1>
+<header class="top-bar">
+  <h1 class="title">ระบบยืม-คืน Notebook</h1>
+  <img src="pic/unnamed.png" alt="School Logo" class="school-logo">
+
+</div>
+</header>
 
 <div class="button-group">
   <button id="loginBtn">Login ด้วยเมลโรงเรียน</button>
@@ -29,6 +34,7 @@
 </div>
 
 <h2>รายการโน้ตบุ๊ค</h2>
+
 
 <div id="laptopList"></div>
 
@@ -142,17 +148,22 @@ async function loadLaptops() {
 
       if (status === "available") {
 
+  const confirmBorrow = confirm("ต้องการยืม " + data.name + " ใช่หรือไม่?");
+  if (!confirmBorrow) return;
         await updateDoc(docRef, {
           status: "borrowed",
           borrowedBy: currentUser.email,
           borrowDate: new Date().toLocaleString("th-TH")
         });
 
-        await sendToSheet("BORROW", data.name);
+       sendToSheet("BORROW", data.name);
 
       } else {
 
-        if (data.borrowedBy === currentUser.email || isAdmin) {
+ if (data.borrowedBy === currentUser.email || isAdmin) {
+
+  const confirmReturn = confirm("ต้องการคืน " + data.name + " ใช่หรือไม่?");
+  if (!confirmReturn) return;
 
           await updateDoc(docRef, {
             status: "available",
@@ -160,7 +171,7 @@ async function loadLaptops() {
             borrowDate: ""
           });
 
-          await sendToSheet("RETURN", data.name);
+       sendToSheet("RETURN", data.name);
 
         } else {
           alert("เครื่องนี้ถูกยืมโดยคนอื่น");
@@ -226,6 +237,18 @@ logoutBtn.onclick = () => {
 };
 
 </script>
+
+<div id="confirmModal" class="modal">
+  <div class="modal-content">
+    <p id="modalText"></p>
+    <div class="modal-buttons">
+      <button id="confirmYes">ยืนยัน</button>
+      <button id="confirmNo">ยกเลิก</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
 
 </body>
 </html>
